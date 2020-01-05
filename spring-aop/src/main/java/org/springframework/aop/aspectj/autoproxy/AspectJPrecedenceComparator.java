@@ -85,6 +85,20 @@ class AspectJPrecedenceComparator implements Comparator<Advisor> {
 		return advisorPrecedence;
 	}
 
+	/**
+	 *  Before V.S Around -> [Around, Before]
+	 *
+	 *  After V.S Around -> [After, Around, Before]
+	 *
+	 *  After V.S Before -> [After, Around, Before]
+	 *
+	 *  AfterReturn V.S Around
+	 * @param advisor1
+	 * @param advisor2
+	 * @return
+	 */
+
+	// eg: advisor1 为 Before（下标索引为1），advisor2 为Around（下标索引为0），两者都不是After
 	private int comparePrecedenceWithinAspect(Advisor advisor1, Advisor advisor2) {
 		boolean oneOrOtherIsAfterAdvice =
 				(AspectJAopUtils.isAfterAdvice(advisor1) || AspectJAopUtils.isAfterAdvice(advisor2));

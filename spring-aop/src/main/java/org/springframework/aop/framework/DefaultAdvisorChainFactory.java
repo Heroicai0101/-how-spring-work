@@ -16,15 +16,8 @@
 
 package org.springframework.aop.framework;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.aopalliance.intercept.Interceptor;
 import org.aopalliance.intercept.MethodInterceptor;
-
 import org.springframework.aop.Advisor;
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.MethodMatcher;
@@ -32,6 +25,12 @@ import org.springframework.aop.PointcutAdvisor;
 import org.springframework.aop.framework.adapter.AdvisorAdapterRegistry;
 import org.springframework.aop.framework.adapter.GlobalAdvisorAdapterRegistry;
 import org.springframework.aop.support.MethodMatchers;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A simple but definitive way of working out an advice chain for a Method,
@@ -64,6 +63,8 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 				if (config.isPreFiltered() || pointcutAdvisor.getPointcut().getClassFilter().matches(actualClass)) {
 					MethodMatcher mm = pointcutAdvisor.getPointcut().getMethodMatcher();
 					if (MethodMatchers.matches(mm, method, actualClass, hasIntroductions)) {
+						// 将不是 MethodInterceptor类型的advisor的advice适配成 MethodInterceptor
+						// 如此一来，后续就可以统一调用invoke(MethodInvocation invocation)方法
 						MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
 						if (mm.isRuntime()) {
 							// Creating a new object instance in the getInterceptors() method
@@ -73,6 +74,7 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 							}
 						}
 						else {
+							// 加入到拦截器列表
 							interceptorList.addAll(Arrays.asList(interceptors));
 						}
 					}

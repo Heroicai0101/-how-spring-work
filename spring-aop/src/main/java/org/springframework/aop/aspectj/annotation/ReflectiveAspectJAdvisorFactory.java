@@ -74,6 +74,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 
 	static {
 		CompoundComparator<Method> comparator = new CompoundComparator<Method>();
+		// 1.根据数组的下标索引排序
 		comparator.addComparator(new ConvertingComparator<Method, Annotation>(
 				new InstanceComparator<Annotation>(
 						Around.class, Before.class, After.class, AfterReturning.class, AfterThrowing.class),
@@ -85,6 +86,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 						return (annotation != null ? annotation.getAnnotation() : null);
 					}
 				}));
+		// 2.对于相同的Advice方法，根据方法名字符串自然序排序
 		comparator.addComparator(new ConvertingComparator<Method, String>(
 				new Converter<Method, String>() {
 					@Override
@@ -120,6 +122,9 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	}
 
 
+	/**
+	 * 用来解析@Aspect注解切面类，解析并创建Advisor增强方法(标注@Before、@After等注解的方法）
+	 */
 	@Override
 	public List<Advisor> getAdvisors(MetadataAwareAspectInstanceFactory aspectInstanceFactory) {
 		Class<?> aspectClass = aspectInstanceFactory.getAspectMetadata().getAspectClass();
@@ -131,8 +136,10 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 		MetadataAwareAspectInstanceFactory lazySingletonAspectInstanceFactory =
 				new LazySingletonAspectInstanceFactoryDecorator(aspectInstanceFactory);
 
+		// 遍历全部方法，找出通知方法
 		List<Advisor> advisors = new ArrayList<Advisor>();
 		for (Method method : getAdvisorMethods(aspectClass)) {
+			// 被 @Pointcut, @Around, @Before, @After, @AfterReturning, @AfterThrowing 注解的方法即为通知方法
 			Advisor advisor = getAdvisor(method, lazySingletonAspectInstanceFactory, advisors.size(), aspectName);
 			if (advisor != null) {
 				advisors.add(advisor);
@@ -157,6 +164,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 	}
 
 	private List<Method> getAdvisorMethods(Class<?> aspectClass) {
+		// 获取切面类的全部方法，但排除了有@Pointcut注解的方法
 		final List<Method> methods = new ArrayList<Method>();
 		ReflectionUtils.doWithMethods(aspectClass, new ReflectionUtils.MethodCallback() {
 			@Override
@@ -200,6 +208,7 @@ public class ReflectiveAspectJAdvisorFactory extends AbstractAspectJAdvisorFacto
 
 		validate(aspectInstanceFactory.getAspectMetadata().getAspectClass());
 
+		// 通知上的切点表达式
 		AspectJExpressionPointcut expressionPointcut = getPointcut(
 				candidateAdviceMethod, aspectInstanceFactory.getAspectMetadata().getAspectClass());
 		if (expressionPointcut == null) {

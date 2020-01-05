@@ -606,6 +606,7 @@ public abstract class AbstractAspectJAdvice implements Advice, AspectJPrecedence
 	 * @throws Throwable in case of invocation failure
 	 */
 	protected Object invokeAdviceMethod(JoinPointMatch jpMatch, Object returnValue, Throwable ex) throws Throwable {
+		// getJoinPoint() 方法从线程局部变量 ExposeInvocationInterceptor.invocation 获取了当前的 ReflectiveMethodInvocation
 		return invokeAdviceMethodWithGivenArgs(argBinding(getJoinPoint(), jpMatch, returnValue, ex));
 	}
 

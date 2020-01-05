@@ -16,15 +16,14 @@
 
 package org.springframework.aop.interceptor;
 
-import java.io.Serializable;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-
 import org.springframework.aop.Advisor;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.core.NamedThreadLocal;
 import org.springframework.core.PriorityOrdered;
+
+import java.io.Serializable;
 
 /**
  * Interceptor that exposes the current {@link org.aopalliance.intercept.MethodInvocation}
@@ -47,6 +46,8 @@ public class ExposeInvocationInterceptor implements MethodInterceptor, PriorityO
 	public static final ExposeInvocationInterceptor INSTANCE = new ExposeInvocationInterceptor();
 
 	/**
+	 * INSTANCE 就是 ExposeInvocationInterceptor，故 ADVISOR.getAdvise()就是 ExposeInvocationInterceptor
+	 *
 	 * Singleton advisor for this class. Use in preference to INSTANCE when using
 	 * Spring AOP, as it prevents the need to create a new Advisor to wrap the instance.
 	 */
@@ -86,7 +87,10 @@ public class ExposeInvocationInterceptor implements MethodInterceptor, PriorityO
 
 	@Override
 	public Object invoke(MethodInvocation mi) throws Throwable {
+		// oldInvocation 为null
 		MethodInvocation oldInvocation = invocation.get();
+		// 注意：mi为方法入参传入的ReflectiveMethodInvocation，保存到ThreadLocal中，AbstractAspectJAdvice.invokeAdviceMethod()会用到
+		// 这个mi其实就是最开始包含目标对象的ReflectiveMethodInvocation对象
 		invocation.set(mi);
 		try {
 			return mi.proceed();

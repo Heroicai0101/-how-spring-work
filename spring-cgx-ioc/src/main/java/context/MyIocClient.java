@@ -8,10 +8,10 @@ import org.springframework.context.annotation.ComponentScan;
  * 2019/12/21 下午9:19
  */
 @ComponentScan
-public class MySpring {
+public class MyIocClient {
 
     public static void main(String[] args) {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MySpring.class);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(MyIocClient.class);
 
         CityService cityService = context.getBean(CityService.class);
         cityService.hello();

@@ -16,14 +16,9 @@
 
 package org.springframework.aop.aspectj.autoproxy;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 import org.aopalliance.aop.Advice;
 import org.aspectj.util.PartialOrder;
 import org.aspectj.util.PartialOrder.PartialComparable;
-
 import org.springframework.aop.Advisor;
 import org.springframework.aop.aspectj.AbstractAspectJAdvice;
 import org.springframework.aop.aspectj.AspectJPointcutAdvisor;
@@ -32,6 +27,10 @@ import org.springframework.aop.framework.autoproxy.AbstractAdvisorAutoProxyCreat
 import org.springframework.aop.interceptor.ExposeInvocationInterceptor;
 import org.springframework.core.Ordered;
 import org.springframework.util.ClassUtils;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * {@link org.springframework.aop.framework.autoproxy.AbstractAdvisorAutoProxyCreator}
@@ -63,6 +62,12 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 	 * precedence to lowest. "On the way in" to a join point, the highest precedence
 	 * advisor should run first. "On the way out" of a join point, the highest precedence
 	 * advisor should run last.
+	 *
+	 * 附：声明顺序 Around、Before、After、AfterReturning、AfterThrowing
+	 * 1. 如果排序对比的两个对象中任意一个为After通知，则声明顺序越靠后的优先级越高
+	 * 2. 否则，首先声明的通知具有更高的优先级
+	 *
+	 * 最终得到的排序结果：AfterThrowing、AfterReturning、After、Around、Before
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -73,6 +78,7 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 			partiallyComparableAdvisors.add(
 					new PartiallyComparableAdvisorHolder(element, DEFAULT_PRECEDENCE_COMPARATOR));
 		}
+		// 真正对Advise排序的地方：排序逻辑见 AspectJPrecedenceComparator.compare() 方法
 		List<PartiallyComparableAdvisorHolder> sorted =
 				PartialOrder.sort(partiallyComparableAdvisors);
 		if (sorted != null) {
@@ -99,7 +105,7 @@ public class AspectJAwareAdvisorAutoProxyCreator extends AbstractAdvisorAutoProx
 
 	@Override
 	protected boolean shouldSkip(Class<?> beanClass, String beanName) {
-		// 找到候选的Advisor
+		// 找到候选的Advisor, 这里取出来的Advisor是有序的：Around 、Before 、After 、AfterReturning、AfterThrowing
 		// TODO: Consider optimization by caching the list of the aspect names
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 		for (Advisor advisor : candidateAdvisors) {

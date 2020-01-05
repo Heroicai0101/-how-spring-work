@@ -89,6 +89,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 				if (aspectNames == null) {
 					List<Advisor> advisors = new LinkedList<Advisor>();
 					aspectNames = new LinkedList<String>();
+					// 类型限定是Object，故可以拿到IOC容器中全部bean names
 					String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(
 							this.beanFactory, Object.class, true, false);
 					for (String beanName : beanNames) {
@@ -101,6 +102,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 						if (beanType == null) {
 							continue;
 						}
+						// 标注有@Aspect注解，则符合
 						if (this.advisorFactory.isAspect(beanType)) {
 							// 是切面类，加入到缓存中
 							aspectNames.add(beanName);
@@ -109,9 +111,10 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 								// 构建切面注解的实例工厂
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
-								// 真正地去获取实例工厂
+								// 【核心】真正地去解析切面的通知
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								if (this.beanFactory.isSingleton(beanName)) {
+									// 这里放入了缓存
 									this.advisorsCache.put(beanName, classAdvisors);
 								}
 								else {
@@ -143,6 +146,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 		}
 		List<Advisor> advisors = new LinkedList<Advisor>();
 		for (String aspectName : aspectNames) {
+			// 这里直接能从缓存拿到，那么是在哪里放到缓存的？关键在于看哪里会调用到this.advisorsCache.put(beanName, classAdvisors);
 			List<Advisor> cachedAdvisors = this.advisorsCache.get(aspectName);
 			if (cachedAdvisors != null) {
 				advisors.addAll(cachedAdvisors);

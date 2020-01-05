@@ -654,6 +654,8 @@ class CglibAopProxy implements AopProxy, Serializable {
 				if (target != null) {
 					targetClass = target.getClass();
 				}
+
+				// 获取拦截器链：这里的advised是一个AdvisedSupport对象，通过getAdvisors()方法能获取到全部增加方法
 				List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 				Object retVal;
 				// Check whether we only have one InvokerInterceptor: that is,

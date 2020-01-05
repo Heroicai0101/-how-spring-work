@@ -87,8 +87,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
+		// 强行塞一个拦截器 ExposeInvocationInterceptor 到列表最前面
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
+			// 重点：这里对Advisor进行了排序; 注释里面已经说清楚了：AspectJPrecedenceComparator.compare()
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
 		return eligibleAdvisors;

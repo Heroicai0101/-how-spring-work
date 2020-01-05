@@ -16,15 +16,14 @@
 
 package org.springframework.aop.framework.adapter;
 
+import org.aopalliance.aop.Advice;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.aopalliance.aop.Advice;
-import org.aopalliance.intercept.MethodInterceptor;
-
-import org.springframework.aop.Advisor;
-import org.springframework.aop.support.DefaultPointcutAdvisor;
 
 /**
  * Default implementation of the {@link AdvisorAdapterRegistry} interface.
@@ -44,11 +43,14 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 
 
 	/**
+	 * 默认配置了三个适配器，专门针对 MethodBeforeAdvice、AfterReturningAdvice、ThrowsAdvice
 	 * Create a new DefaultAdvisorAdapterRegistry, registering well-known adapters.
 	 */
 	public DefaultAdvisorAdapterRegistry() {
 		registerAdvisorAdapter(new MethodBeforeAdviceAdapter());
 		registerAdvisorAdapter(new AfterReturningAdviceAdapter());
+
+		// ThrowsAdvice基本没怎么用场
 		registerAdvisorAdapter(new ThrowsAdviceAdapter());
 	}
 
@@ -82,8 +84,11 @@ public class DefaultAdvisorAdapterRegistry implements AdvisorAdapterRegistry, Se
 		if (advice instanceof MethodInterceptor) {
 			interceptors.add((MethodInterceptor) advice);
 		}
+
 		for (AdvisorAdapter adapter : this.adapters) {
+			// 只有 AspectJAfterReturningAdvice 和 AspectJMethodBeforeAdvice 会走到这里
 			if (adapter.supportsAdvice(advice)) {
+				// 交给具体的适配器去进行适配
 				interceptors.add(adapter.getInterceptor(advisor));
 			}
 		}
