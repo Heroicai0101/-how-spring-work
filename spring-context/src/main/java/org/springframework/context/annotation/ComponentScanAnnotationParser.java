@@ -123,6 +123,7 @@ class ComponentScanAnnotationParser {
 			basePackages.add(ClassUtils.getPackageName(clazz));
 		}
 		if (basePackages.isEmpty()) {
+			// 若未指定扫描包路径，则以declaringClass所在的包路径为扫描起点
 			basePackages.add(ClassUtils.getPackageName(declaringClass));
 		}
 

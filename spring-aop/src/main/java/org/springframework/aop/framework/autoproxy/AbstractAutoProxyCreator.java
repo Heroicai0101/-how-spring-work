@@ -330,7 +330,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @return a proxy wrapping the bean, or the raw bean instance as-is
 	 */
 	protected Object wrapIfNecessary(Object bean, String beanName, Object cacheKey) {
-		// 已经处理过的
+		// 已经处理过(只要处理过的，无论是否增强，都会标记为true或false)
 		if (beanName != null && this.targetSourcedBeans.contains(beanName)) {
 			return bean;
 		}

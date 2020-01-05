@@ -111,10 +111,11 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 								// 构建切面注解的实例工厂
 								MetadataAwareAspectInstanceFactory factory =
 										new BeanFactoryAspectInstanceFactory(this.beanFactory, beanName);
-								// 【核心】真正地去解析切面的通知
+								//【核心】真正地去解析切面的通知
+								// 这里的Advisor是有序的：Around -> Before -> After -> AfterReturning -> AfterThrowing
 								List<Advisor> classAdvisors = this.advisorFactory.getAdvisors(factory);
 								if (this.beanFactory.isSingleton(beanName)) {
-									// 这里放入了缓存
+									// 这里放入了缓存，本方法后面会涉及从缓存读取
 									this.advisorsCache.put(beanName, classAdvisors);
 								}
 								else {
@@ -135,6 +136,7 @@ public class BeanFactoryAspectJAdvisorsBuilder {
 							}
 						}
 					}
+					// 记录Aspect切面的名称
 					this.aspectBeanNames = aspectNames;
 					return advisors;
 				}

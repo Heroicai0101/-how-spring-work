@@ -50,6 +50,10 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	private BeanFactoryAdvisorRetrievalHelper advisorRetrievalHelper;
 
 
+    /**
+     * BeanFactoryAware 的子类，bean初始化时会回调此方法
+     * 详见 AbstractAutowireCapableBeanFactory#initializeBean 方法
+     */
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) {
 		super.setBeanFactory(beanFactory);

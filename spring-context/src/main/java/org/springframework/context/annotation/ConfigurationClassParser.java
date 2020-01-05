@@ -278,6 +278,7 @@ class ConfigurationClassParser {
 			}
 		}
 
+		// 处理 @ComponentScan 注解
 		// Process any @ComponentScan annotations
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);

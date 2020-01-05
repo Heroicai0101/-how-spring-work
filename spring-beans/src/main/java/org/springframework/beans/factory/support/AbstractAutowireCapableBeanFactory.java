@@ -1006,10 +1006,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see InstantiationAwareBeanPostProcessor#postProcessBeforeInstantiation
 	 */
 	protected Object applyBeanPostProcessorsBeforeInstantiation(Class<?> beanClass, String beanName) {
-		for (BeanPostProcessor bp : getBeanPostProcessors()) {
+//        System.out.println("beanName=" + beanName);
+        for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof InstantiationAwareBeanPostProcessor) {
-				InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
-				// AnnotationAwareAspectJAutoProxyCreator
+//                System.out.println("\t bp=" + bp.getClass().getName());
+                InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+				/*
+				 * 核心：当且仅当 getBeanPostProcessors() 列表里面第一次包含 AnnotationAwareAspectJAutoProxyCreator 时，才触发对切面的Advisor的解析
+				 * 注：AnnotationAwareAspectJAutoProxyCreator 对应的beanName为org.springframework.context.annotation.internalConfigurationAnnotationProcessor
+				 */
 				Object result = ibp.postProcessBeforeInstantiation(beanClass, beanName);
 				if (result != null) {
 					return result;
@@ -1590,6 +1595,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}, getAccessControlContext());
 		}
 		else {
+			// 回调各种XXXAware接口(BeanNameAware、BeanClassLoaderAware、BeanFactoryAware)实现类的setXXX方法
 			invokeAwareMethods(beanName, bean);
 		}
 

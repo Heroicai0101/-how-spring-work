@@ -82,7 +82,9 @@ class PostProcessorRegistrationDelegate {
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
+				// 只有一个 ConfigurationClassPostProcessor ？
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+					// 这里触发了getBean
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
@@ -208,6 +210,7 @@ class PostProcessorRegistrationDelegate {
 				}
 			}
 			else if (beanFactory.isTypeMatch(ppName, Ordered.class)) {
+				// 有序的BPP
 				orderedPostProcessorNames.add(ppName);
 			}
 			else {
@@ -222,6 +225,7 @@ class PostProcessorRegistrationDelegate {
 		// Next, register the BeanPostProcessors that implement Ordered.
 		List<BeanPostProcessor> orderedPostProcessors = new ArrayList<BeanPostProcessor>();
 		for (String ppName : orderedPostProcessorNames) {
+			// 向Ioc容器获取Bean，触发Bean生命周期，完成bean的实例化、初始化
 			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
 			orderedPostProcessors.add(pp);
 			if (pp instanceof MergedBeanDefinitionPostProcessor) {
