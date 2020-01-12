@@ -431,7 +431,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			/* 核心：解析Aspect切面，并将切面加入到缓存 */
+			/* 核心：解析Aspect切面，并将切面加入到缓存
+			 * 重点关注 AnnotationAwareAspectJAutoProxyCreator.postProcessBeforeInstantiation() 方法完成了切面解析
+			 */
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
@@ -982,7 +984,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
-					// 后置处理器解析Aspect切面
+					// AnnotationAwareAspectJAutoProxyCreator 后置处理器在这里开始解析Aspect切面
 					bean = applyBeanPostProcessorsBeforeInstantiation(targetType, beanName);
 					if (bean != null) {
 						bean = applyBeanPostProcessorsAfterInitialization(bean, beanName);

@@ -308,6 +308,7 @@ public abstract class AopUtils {
 				// already processed
 				continue;
 			}
+			// 检测切点能否匹配上
 			if (canApply(candidate, clazz, hasIntroductions)) {
 				eligibleAdvisors.add(candidate);
 			}

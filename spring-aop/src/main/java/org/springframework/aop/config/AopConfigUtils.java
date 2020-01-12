@@ -84,7 +84,7 @@ public abstract class AopConfigUtils {
 	}
 
 	public static BeanDefinition registerAspectJAnnotationAutoProxyCreatorIfNecessary(BeanDefinitionRegistry registry, Object source) {
-		// 向IOC容器注入一个AnnotationAwareAspectJAutoProxyCreator 组件
+		// 向IOC容器导入一个 AnnotationAwareAspectJAutoProxyCreator 组件
 		return registerOrEscalateApcAsRequired(AnnotationAwareAspectJAutoProxyCreator.class, registry, source);
 	}
 
@@ -118,10 +118,12 @@ public abstract class AopConfigUtils {
 			return null;
 		}
 
+		// cls的值为 AnnotationAwareAspectJAutoProxyCreator.class
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
 		beanDefinition.setSource(source);
 		beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);
 		beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+		// 注册bean定义： scope 为 SCOPE_DEFAULT，会被判定为单例；而非懒加载的单例bean容器会负责帮我们实例化、初始化
 		registry.registerBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME, beanDefinition);
 		return beanDefinition;
 	}

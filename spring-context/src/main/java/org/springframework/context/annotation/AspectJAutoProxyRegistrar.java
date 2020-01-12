@@ -42,6 +42,28 @@ class AspectJAutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 	public void registerBeanDefinitions(
 			AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
+		/*
+		 * 导入 AnnotationAwareAspectJAutoProxyCreator 组件，beanName= org.springframework.aop.config.internalAutoProxyCreator
+		 * 该组件是一个BPP和BeanFactoryAware，故重点关注BPP的实例化、初始化前后共4个回调方法及 setBeanFactory()方法
+		 *
+		 *  AnnotationAwareAspectJAutoProxyCreator
+		 *  	AspectJAwareAdvisorAutoProxyCreator
+		 *  		AbstractAdvisorAutoProxyCreator
+		 *  			AbstractAutoProxyCreator
+		 *  				ProxyProcessorSupport
+		 *						implements SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware
+		 *
+		 *
+		 *  AbstractAutoProxyCreator.setBeanFactory()
+		 *  子类 AbstractAdvisorAutoProxyCreator 重写了setBeanFactory()方法:
+		 *      AbstractAdvisorAutoProxyCreator.setBeanFactory() --> initBeanFactory()
+		 *          AnnotationAwareAspectJAutoProxyCreator 重写了 initBeanFactory() 方法
+		 *
+		 * 附：
+		 *   1、setBeanFactory() 方法在 AbstractAutowireCapableBeanFactory.invokeAwareMethods() 触发
+		 *   2、postProcessBeforeInstantiation() 方法在 AbstractAutowireCapableBeanFactory.resolveBeforeInstantiation 触发
+		 *   3、postProcessAfterInitialization() 方法在 AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization() 触发
+		 */
 		AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
 
 		AnnotationAttributes enableAspectJAutoProxy =

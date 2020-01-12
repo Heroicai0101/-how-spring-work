@@ -239,10 +239,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		Object cacheKey = getCacheKey(beanClass, beanName);
 
 		if (beanName == null || !this.targetSourcedBeans.contains(beanName)) {
+			// advisedBeans 记录的是已经走过是否需要增强流程的bean
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
-			// shouldSkip()里面真正解析了Aspect切面的通知
+			// 基础类型： Advice.class、Pointcut.class、Advisor.class、AopInfrastructureBean 或者有 @Aspect
+			// 【重点】shouldSkip()里面真正解析了Aspect切面的通知
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -344,6 +346,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			return bean;
 		}
 
+		// 找到能在当前bean使用的增强器(找哪些通知方法是需要切入到当前bean)，注意：返回的增强器有排序
 		// Create proxy if we have advice.
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
@@ -352,6 +355,7 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			Object proxy = createProxy(
 					bean.getClass(), beanName, specificInterceptors, new SingletonTargetSource(bean));
 			this.proxyTypes.put(cacheKey, proxy.getClass());
+			// 返回代理对象，从这里可以看出，IOC容器后续拿到的就是代理对象
 			return proxy;
 		}
 

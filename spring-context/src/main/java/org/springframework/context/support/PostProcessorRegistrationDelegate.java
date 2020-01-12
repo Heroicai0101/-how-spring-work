@@ -220,6 +220,8 @@ class PostProcessorRegistrationDelegate {
 
 		// First, register the BeanPostProcessors that implement PriorityOrdered.
 		sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
+
+		// 1.首先，注册实现了 PriorityOrdered 接口的BPP；注册操作实际通过 beanFactory.addBeanPostProcessor()方法执行
 		registerBeanPostProcessors(beanFactory, priorityOrderedPostProcessors);
 
 		// Next, register the BeanPostProcessors that implement Ordered.
@@ -233,6 +235,8 @@ class PostProcessorRegistrationDelegate {
 			}
 		}
 		sortPostProcessors(orderedPostProcessors, beanFactory);
+
+		// 2.其次，注册实现了 Ordered 接口的BPP：AOP的核心类 AnnotationAwareAspectJAutoProxyCreator 就是这里注册的
 		registerBeanPostProcessors(beanFactory, orderedPostProcessors);
 
 		// Now, register all regular BeanPostProcessors.
@@ -248,6 +252,8 @@ class PostProcessorRegistrationDelegate {
 
 		// Finally, re-register all internal BeanPostProcessors.
 		sortPostProcessors(internalPostProcessors, beanFactory);
+
+		// 3.最后，注册剩下的BPP
 		registerBeanPostProcessors(beanFactory, internalPostProcessors);
 
 		// Re-register post-processor for detecting inner beans as ApplicationListeners,

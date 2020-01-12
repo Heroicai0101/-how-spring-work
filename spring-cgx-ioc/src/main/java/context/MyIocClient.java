@@ -1,5 +1,6 @@
 package context;
 
+import context.ioc.CityService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 

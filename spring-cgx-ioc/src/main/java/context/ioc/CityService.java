@@ -1,4 +1,4 @@
-package context;
+package context.ioc;
 
 import org.springframework.stereotype.Component;
 

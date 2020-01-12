@@ -54,9 +54,12 @@ public class DefaultAdvisorChainFactory implements AdvisorChainFactory, Serializ
 		List<Object> interceptorList = new ArrayList<Object>(config.getAdvisors().length);
 		Class<?> actualClass = (targetClass != null ? targetClass : method.getDeclaringClass());
 		boolean hasIntroductions = hasMatchingIntroductions(config, actualClass);
+		// 默认配置了三个适配器
 		AdvisorAdapterRegistry registry = GlobalAdvisorAdapterRegistry.getInstance();
 
+		/* 遍历增强器，适配成拦截器 MethodInterceptor  */
 		for (Advisor advisor : config.getAdvisors()) {
+			// 这里的advisor有两种：DefaultPointcutAdvisor 和 InstantiationModelAwarePointcutAdvisor , 二者都实现了 PointcutAdvisor 接口
 			if (advisor instanceof PointcutAdvisor) {
 				// Add it conditionally.
 				PointcutAdvisor pointcutAdvisor = (PointcutAdvisor) advisor;

@@ -655,7 +655,10 @@ class CglibAopProxy implements AopProxy, Serializable {
 					targetClass = target.getClass();
 				}
 
-				// 获取拦截器链：这里的advised是一个AdvisedSupport对象，通过getAdvisors()方法能获取到全部增加方法
+				/*
+				 * 获取拦截器链：这里的advised是一个AdvisedSupport对象，通过getAdvisors()方法能获取到全部增加方法
+				 * 所谓的拦截器链，干的事就是把每一个通知方法适配成拦截器
+				 */
 				List<Object> chain = this.advised.getInterceptorsAndDynamicInterceptionAdvice(method, targetClass);
 				Object retVal;
 				// Check whether we only have one InvokerInterceptor: that is,
@@ -666,9 +669,11 @@ class CglibAopProxy implements AopProxy, Serializable {
 					// it does nothing but a reflective operation on the target, and no hot
 					// swapping or fancy proxying.
 					Object[] argsToUse = AopProxyUtils.adaptArgumentsIfNecessary(method, args);
+					// 若无拦截器链，则直接执行目标方法
 					retVal = methodProxy.invoke(target, argsToUse);
 				}
 				else {
+					// CglibMethodInvocation 继承了 ReflectiveMethodInvocation；并传入目标对象、目标方法、拦截器链等信息
 					// We need to create a method invocation...
 					retVal = new CglibMethodInvocation(proxy, target, method, args, targetClass, chain, methodProxy).proceed();
 				}

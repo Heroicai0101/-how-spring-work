@@ -71,7 +71,10 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 
 	@Override
 	public void afterSingletonsInstantiated() {
+		// 获取事件监听器工厂
 		List<EventListenerFactory> factories = getEventListenerFactories();
+
+		// 直接获取全部beanName
 		String[] beanNames = this.applicationContext.getBeanNamesForType(Object.class);
 		for (String beanName : beanNames) {
 			if (!ScopedProxyUtils.isScopedTarget(beanName)) {
@@ -99,6 +102,7 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 						}
 					}
 					try {
+						// 创建并注册事件监听器；事件的发布逻辑在注册之后，见 AbstractApplicationContext.finishRefresh()
 						processBean(factories, beanName, type);
 					}
 					catch (Throwable ex) {
@@ -116,6 +120,7 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 	 * {@link EventListener} annotated methods.
 	 */
 	protected List<EventListenerFactory> getEventListenerFactories() {
+		// EventListenerFactory 这个组件是IOC一开始就引入了的，见AnnotationConfigUtils.registerAnnotationConfigProcessors()
 		Map<String, EventListenerFactory> beans = this.applicationContext.getBeansOfType(EventListenerFactory.class);
 		List<EventListenerFactory> factories = new ArrayList<EventListenerFactory>(beans.values());
 		AnnotationAwareOrderComparator.sort(factories);
@@ -126,6 +131,7 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 		if (!this.nonAnnotatedClasses.contains(targetType)) {
 			Map<Method, EventListener> annotatedMethods = null;
 			try {
+				// 查找当前类全部带 @EventListener 注解的方法
 				annotatedMethods = MethodIntrospector.selectMethods(targetType,
 						new MethodIntrospector.MetadataLookup<EventListener>() {
 							@Override
@@ -151,14 +157,17 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 				for (Method method : annotatedMethods.keySet()) {
 					for (EventListenerFactory factory : factories) {
 						if (factory.supportsMethod(method)) {
+							// 非私有、非静态方法
 							Method methodToUse = AopUtils.selectInvocableMethod(
 									method, this.applicationContext.getType(beanName));
+							// 适配为事件监听器
 							ApplicationListener<?> applicationListener =
 									factory.createApplicationListener(beanName, targetType, methodToUse);
 							if (applicationListener instanceof ApplicationListenerMethodAdapter) {
 								((ApplicationListenerMethodAdapter) applicationListener)
 										.init(this.applicationContext, this.evaluator);
 							}
+							// 加入到事件监听器列表
 							this.applicationContext.addApplicationListener(applicationListener);
 							break;
 						}
