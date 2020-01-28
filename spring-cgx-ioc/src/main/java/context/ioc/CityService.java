@@ -16,16 +16,16 @@ public class CityService {
     private CityDao cityDao;
 
     public CityService() {
-        System.out.println("construct");
+        System.out.println("cityService construct");
     }
 
     @PostConstruct
     void init() {
-        System.out.println("init");
+        System.out.println("cityService init");
     }
 
     public void hello() {
-        cityDao.hello();
+        cityDao.query();
     }
 
 }

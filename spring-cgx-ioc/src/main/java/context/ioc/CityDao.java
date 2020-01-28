@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CityDao {
 
-    public void hello() {
-        System.out.println("hello");
+    public void query() {
+        System.out.println("CityDao query");
     }
 }

@@ -58,6 +58,16 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+		/*
+		 * AnnotatedBeanDefinitionReader 的构造方法 向ioc容器导入几个注解驱动的基础BPP组件 以及 Bean定义的后置处理器
+		 * 见AnnotationConfigUtils.registerAnnotationConfigProcessors(BeanDefinitionRegistry, null) 方法:
+		 *
+		 * ConfigurationClassPostProcessor、
+		 * AutowiredAnnotationBeanPostProcessor、
+		 * RequiredAnnotationBeanPostProcessor、
+		 * CommonAnnotationBeanPostProcessor
+		 * EventListenerMethodProcessor
+ 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
@@ -79,7 +89,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * e.g. {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... annotatedClasses) {
-		// 父类 GenericApplicationContext 的构造方法，创建了DefaultListableBeanFactory
+		// 父类 GenericApplicationContext 的构造方法，创建了DefaultListableBeanFactory；并向Ioc容器导入了几个注解开发的基础BPP组件
 		this();
 
 		// 将启动类的beanDefinition放入IOC容器

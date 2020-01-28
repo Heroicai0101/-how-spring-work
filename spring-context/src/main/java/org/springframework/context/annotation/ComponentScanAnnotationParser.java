@@ -77,6 +77,7 @@ class ComponentScanAnnotationParser {
 		Assert.state(this.environment != null, "Environment must not be null");
 		Assert.state(this.resourceLoader != null, "ResourceLoader must not be null");
 
+		// ClassPath下的bean定义扫描: useDefaultFilters 会默认扫描所有 @Component 注解的类
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 

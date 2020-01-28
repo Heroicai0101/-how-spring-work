@@ -120,6 +120,8 @@ public @interface ComponentScan {
 	String resourcePattern() default ClassPathScanningCandidateComponentProvider.DEFAULT_RESOURCE_PATTERN;
 
 	/**
+	 * 默认值为true, 则会扫描 @Component 注解的类; @Repository、@Service、@Controller 这几个都有 @Component 注解
+	 *
 	 * Indicates whether automatic detection of classes annotated with {@code @Component}
 	 * {@code @Repository}, {@code @Service}, or {@code @Controller} should be enabled.
 	 */
