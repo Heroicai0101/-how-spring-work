@@ -210,6 +210,7 @@ class ConfigurationClassBeanDefinitionReader {
 		else {
 			/*
 			 * 注意: 这里设置的是bean定义的 factoryBeanName 和 factoryMethodName 两个属性，这时候beanClass=null
+			 * factoryBeanName 是当前配置类的beanName
 			 * AbstractAutowireCapableBeanFactory.createBeanInstance() 实例化的时候就是用的 factoryMethodName
  			 */
 			// instance @Bean method
@@ -264,6 +265,7 @@ class ConfigurationClassBeanDefinitionReader {
 					configClass.getMetadata().getClassName(), beanName));
 		}
 
+		// bean定义注册
 		this.registry.registerBeanDefinition(beanName, beanDefToRegister);
 	}
 

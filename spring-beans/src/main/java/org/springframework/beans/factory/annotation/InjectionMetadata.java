@@ -50,6 +50,7 @@ public class InjectionMetadata {
 
 	private final Class<?> targetClass;
 
+	/** bean 需要依赖注入的元素 */
 	private final Collection<InjectedElement> injectedElements;
 
 	private volatile Set<InjectedElement> checkedElements;
@@ -84,6 +85,7 @@ public class InjectionMetadata {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Processing injected element of bean '" + beanName + "': " + element);
 				}
+				// 开始做属性的依赖注入
 				element.inject(target, beanName, pvs);
 			}
 		}
@@ -168,6 +170,8 @@ public class InjectionMetadata {
 			if (this.isField) {
 				Field field = (Field) this.member;
 				ReflectionUtils.makeAccessible(field);
+				// getResourceToInject() 是重点, 如果是 @Resource 则看CommonAnnotationBeanPostProcessor 的内部类
+				// ResourceElement.getResourceToInject() 方法
 				field.set(target, getResourceToInject(target, requestingBeanName));
 			}
 			else {

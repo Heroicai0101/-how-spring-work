@@ -185,6 +185,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	private transient StringValueResolver embeddedValueResolver;
 
+	/** key 为 beanName, value为 bean 需要注入的依赖 */
 	private transient final Map<String, InjectionMetadata> injectionMetadataCache =
 			new ConcurrentHashMap<String, InjectionMetadata>(256);
 
@@ -294,6 +295,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
 		if (beanType != null) {
+			// 构建 bean 的依赖注入关系, 并放入缓存
 			InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
 			metadata.checkConfigMembers(beanDefinition);
 		}
@@ -313,6 +315,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 	public PropertyValues postProcessPropertyValues(
 			PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
 
+		// 这里可直接从缓存取得到当前bean的依赖注入关系
 		InjectionMetadata metadata = findResourceMetadata(beanName, bean.getClass(), pvs);
 		try {
 			metadata.inject(bean, beanName, pvs);
@@ -337,7 +340,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 						metadata.clear(pvs);
 					}
 					try {
+						// 遍历全部属性, 找出 @Resource 注解的属性 或 方法
 						metadata = buildResourceMetadata(clazz);
+						// bean依赖注入关系放入缓存
 						this.injectionMetadataCache.put(cacheKey, metadata);
 					}
 					catch (NoClassDefFoundError err) {
@@ -373,6 +378,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 						}
 						currElements.add(new EjbRefElement(field, field, null));
 					}
+					// @Resource 注解的属性
 					else if (field.isAnnotationPresent(Resource.class)) {
 						if (Modifier.isStatic(field.getModifiers())) {
 							throw new IllegalStateException("@Resource annotation is not supported on static fields");
@@ -514,11 +520,13 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 		if (this.fallbackToDefaultTypeMatch && element.isDefaultName &&
 				factory instanceof AutowireCapableBeanFactory && !factory.containsBean(name)) {
+			// 若 factory.containsBean(name) = false 表明ioc中不存在同名的bean, 则按类型查找依赖
 			autowiredBeanNames = new LinkedHashSet<String>();
 			resource = ((AutowireCapableBeanFactory) factory).resolveDependency(
 					element.getDependencyDescriptor(), requestingBeanName, autowiredBeanNames, null);
 		}
 		else {
+			// 如果ioc中能找到与匹配当前属性的bean: name相同且类型一致
 			resource = factory.getBean(name, element.lookupType);
 			autowiredBeanNames = Collections.singleton(name);
 		}

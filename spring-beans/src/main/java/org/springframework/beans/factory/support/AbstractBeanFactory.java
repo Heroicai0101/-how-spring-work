@@ -239,6 +239,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		final String beanName = transformedBeanName(name);
 		Object bean;
 
+		/* 三级缓存解决循环依赖就体现在这里 */
 		// 尝试从缓存获取：singletonObjects、earlySingletonObjects、singletonFactories；第一次进来的时候肯定没有
 		// Eagerly check singleton cache for manually registered singletons.
 		Object sharedInstance = getSingleton(beanName);
@@ -325,6 +326,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 							}
 						}
 					});
+					// 如果是普通单例 Bean, 则直接返回 sharedInstance 即可
+					// 如果是FactoryBean 里面声明的bean, 则 sharedInstance 还是 FactoryBean 对象, 需再调用 getObject() 方法
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
 
@@ -574,6 +577,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// Check bean class whether we're dealing with a FactoryBean.
 		if (FactoryBean.class.isAssignableFrom(beanType)) {
 			if (!BeanFactoryUtils.isFactoryDereference(name)) {
+				// FactoryBean 对象, 最终只需要看下 FactoryBean.getObjectType() 就能知道生成的对象类型
 				// If it's a FactoryBean, we want to look at what it creates, not the factory class.
 				beanType = getTypeForFactoryBean(beanName, mbd);
 				if (beanType == null) {
@@ -1633,6 +1637,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		// If it's a FactoryBean, we use it to create a bean instance, unless the
 		// caller actually wants a reference to the factory.
 		if (!(beanInstance instanceof FactoryBean) || BeanFactoryUtils.isFactoryDereference(name)) {
+			// 普通单例 bean 直接返回
 			return beanInstance;
 		}
 
@@ -1648,6 +1653,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				mbd = getMergedLocalBeanDefinition(beanName);
 			}
 			boolean synthetic = (mbd != null && mbd.isSynthetic());
+			// 调用FactoryBean.getObject() 方法创建bean实例; 此时的 FactoryBean 是已经完成了bean的生命周期
 			object = getObjectFromFactoryBean(factory, beanName, !synthetic);
 		}
 		return object;

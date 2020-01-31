@@ -445,6 +445,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					"BeanPostProcessor before instantiation of bean failed", ex);
 		}
 
+		// doCreateBean 做了bean的实例化、初始化
 		Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Finished creating instance of bean '" + beanName + "'");
@@ -472,6 +473,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Instantiate the bean.
 		BeanWrapper instanceWrapper = null;
 		if (mbd.isSingleton()) {
+			// 如果当前bean是 FactoryBean, 则 factoryBeanInstanceCache.remove() 返回的 instanceWrapper 不是null
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
@@ -486,6 +488,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					/*
+					 * 这里又触发了BPP: 构建当前Bean的依赖注入关系, 依赖注入的时候会用到。重点关注:
+					 * 1、@Resource -> CommonAnnotationBeanPostProcessor#postProcessMergedBeanDefinition()
+					 * 2、@Autowired -> AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition()
+					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -777,6 +784,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				getNonSingletonFactoryBeanForTypeCheck(beanName, mbd));
 
 		if (fb != null) {
+			// 调用 FactoryBean.getObjectType() 拿到对象类型
 			// Try to obtain the FactoryBean's object type from this early stage of the instance.
 			Class<?> result = getTypeForFactoryBean(fb);
 			if (result != null) {
@@ -897,6 +905,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				instance = resolveBeforeInstantiation(beanName, mbd);
 				if (instance == null) {
 					bw = createBeanInstance(beanName, mbd, null);
+					// instance 为 FactoryBean 实例
 					instance = bw.getWrappedInstance();
 				}
 			}
@@ -907,6 +916,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 			FactoryBean<?> fb = getFactoryBean(beanName, instance);
 			if (bw != null) {
+				// 添加到缓存 FactoryBean name --> BeanWrapper ; factoryBeanInstanceCache.remove() 会用到
 				this.factoryBeanInstanceCache.put(beanName, bw);
 			}
 			return fb;
@@ -1046,7 +1056,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					"Bean class isn't public, and non-public access not allowed: " + beanClass.getName());
 		}
 
+		// @Bean 注解所在类的 bean定义中: beanClass = null 且 FactoryMethodName != null
 		if (mbd.getFactoryMethodName() != null) {
+			// 调用 FactoryMethod 实例化
 			return instantiateUsingFactoryMethod(beanName, mbd, args);
 		}
 

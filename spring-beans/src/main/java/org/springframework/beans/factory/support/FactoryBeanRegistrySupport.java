@@ -175,6 +175,7 @@ public abstract class FactoryBeanRegistrySupport extends DefaultSingletonBeanReg
 				}
 			}
 			else {
+				// 调用 FactoryBean.getObject() 创建对象, 这个对象可以认为是new出来的，本身不会也不需要依赖注入
 				object = factory.getObject();
 			}
 		}

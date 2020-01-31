@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 
 @Component
-public class MyCalculator {
+public /*final*/ class MyCalculator /*implements IMyCalculator*/ {
 
     public MyCalculator() {
         System.out.println("execute construct");
