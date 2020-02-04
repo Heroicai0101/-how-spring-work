@@ -293,6 +293,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		// 在父类 InitDestroyAnnotationBeanPostProcessor 里面做了 @PostConstruct 和 @PreDestroy 注解扫描, 加入到缓存
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
 		if (beanType != null) {
 			// 构建 bean 的依赖注入关系, 并放入缓存

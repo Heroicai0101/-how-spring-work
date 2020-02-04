@@ -17,7 +17,7 @@ import java.util.List;
  * @author guoxiong
  * 2020/1/8 下午10:16
  */
-@Component
+//@Component
 public class MyEventListener implements InitializingBean {
 
     private List<CityDao> cityDaos;

@@ -431,7 +431,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
-			/* 核心：解析Aspect切面，并将切面加入到缓存
+			/* 【共9个: BPP-1】
+			 * 核心：解析Aspect切面，并将切面加入到缓存
 			 * 重点关注 AnnotationAwareAspectJAutoProxyCreator.postProcessBeforeInstantiation() 方法完成了切面解析
 			 */
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
@@ -488,10 +489,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
-					/*
-					 * 这里又触发了BPP: 构建当前Bean的依赖注入关系, 依赖注入的时候会用到。重点关注:
+					/* 【BPP-3】
+					 * 这里又触发了BPP: 构建当前实例对象的依赖注入关系, 依赖注入的时候会用到。重点关注:
 					 * 1、@Resource -> CommonAnnotationBeanPostProcessor#postProcessMergedBeanDefinition()
 					 * 2、@Autowired -> AutowiredAnnotationBeanPostProcessor#postProcessMergedBeanDefinition()
+					 *
+					 * CommonAnnotationBeanPostProcessor 扫描了实例对象 @PostConstruct 和 @PreDestroy 注解方法并加入到缓存,
+					 * 后面触发 init 方法和 destroy 方法时, 就能直接从缓存获取。
 					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
@@ -503,6 +507,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
+		/* 允许提前暴露单例对象实例, 用来解决循环引用; 这里可以看出, 仅支持单例bean的循环依赖 */
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
@@ -512,10 +517,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.debug("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
-			// 将生成的单例对象放入单例缓存池
+			// 封装bean的引用方法，缓存起来。解决循环引用时会用到
 			addSingletonFactory(beanName, new ObjectFactory<Object>() {
 				@Override
 				public Object getObject() throws BeansException {
+					/*【BPP-4】*/
 					return getEarlyBeanReference(beanName, mbd, bean);
 				}
 			});
@@ -570,6 +576,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Register bean as disposable.
 		try {
+			/*【BPP-9】注册 DisposableBean */
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -1081,7 +1088,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				return instantiateBean(beanName, mbd);
 			}
 		}
-
+        /* BPP-2 */
 		// 推断构造方法，怎么个推断法？反正这里返回的是null
 		// Candidate constructors for autowiring?
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
@@ -1217,6 +1224,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		boolean continueWithPropertyPopulation = true;
 
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+			/*【BPP-5】*/
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
@@ -1255,6 +1263,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (hasInstAwareBpps || needsDepCheck) {
 			PropertyDescriptor[] filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 			if (hasInstAwareBpps) {
+				/*【BPP-6】*/
 				for (BeanPostProcessor bp : getBeanPostProcessors()) {
 					if (bp instanceof InstantiationAwareBeanPostProcessor) {
 						InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
@@ -1615,6 +1624,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
+			/*【BPP-7】*/
 			// 初始化之前：调用bean的后置处理器 @PostConstruct注释的方法
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
@@ -1629,6 +1639,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+			/*【BPP-8】*/
 			// 初始化之后：调用bean的后置处理器：特别注意，Aop的代理对象就是这里生成的
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}

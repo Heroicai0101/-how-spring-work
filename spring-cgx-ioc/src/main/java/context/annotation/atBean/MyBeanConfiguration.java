@@ -3,7 +3,7 @@ package context.annotation.atBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-@Configuration
+//@Configuration
 public class MyBeanConfiguration {
 
     @Bean

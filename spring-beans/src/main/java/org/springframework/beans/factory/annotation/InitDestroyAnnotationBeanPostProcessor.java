@@ -122,6 +122,7 @@ public class InitDestroyAnnotationBeanPostProcessor
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
 		if (beanType != null) {
+			// 扫描 @PostConstruct 和 @PreDestroy 注解的方法, 放入缓存
 			LifecycleMetadata metadata = findLifecycleMetadata(beanType);
 			metadata.checkConfigMembers(beanDefinition);
 		}
@@ -129,8 +130,10 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		// 触发 init 时直接从缓存就能获取到
 		LifecycleMetadata metadata = findLifecycleMetadata(bean.getClass());
 		try {
+			// 触发 init 方法
 			metadata.invokeInitMethods(bean, beanName);
 		}
 		catch (InvocationTargetException ex) {
@@ -149,8 +152,10 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public void postProcessBeforeDestruction(Object bean, String beanName) throws BeansException {
+		// 触发 destroy 时直接从缓存就能获取到
 		LifecycleMetadata metadata = findLifecycleMetadata(bean.getClass());
 		try {
+			// 触发 destroy 方法
 			metadata.invokeDestroyMethods(bean, beanName);
 		}
 		catch (InvocationTargetException ex) {
@@ -184,6 +189,7 @@ public class InitDestroyAnnotationBeanPostProcessor
 			synchronized (this.lifecycleMetadataCache) {
 				metadata = this.lifecycleMetadataCache.get(clazz);
 				if (metadata == null) {
+					// 扫描类中全部方法, 标记出有 @PostConstruct 或 @PreDestroy 注解的方法
 					metadata = buildLifecycleMetadata(clazz);
 					this.lifecycleMetadataCache.put(clazz, metadata);
 				}

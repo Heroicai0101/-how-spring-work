@@ -225,6 +225,7 @@ class DisposableBeanAdapter implements DisposableBean, Runnable, Serializable {
 				if (processor instanceof DestructionAwareBeanPostProcessor) {
 					DestructionAwareBeanPostProcessor dabpp = (DestructionAwareBeanPostProcessor) processor;
 					try {
+						// 直接从缓存就拿到了 LifecycleMetadata
 						if (dabpp.requiresDestruction(bean)) {
 							filteredPostProcessors.add(dabpp);
 						}

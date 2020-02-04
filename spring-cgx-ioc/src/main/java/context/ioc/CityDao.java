@@ -10,6 +10,6 @@ import org.springframework.stereotype.Component;
 public class CityDao {
 
     public void query() {
-        System.out.println("CityDao query");
+        System.out.println("cityDao query");
     }
 }

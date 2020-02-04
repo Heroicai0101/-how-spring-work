@@ -3,6 +3,7 @@ package context.ioc;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 
 /**
@@ -22,6 +23,11 @@ public class CityService {
     @PostConstruct
     void init() {
         System.out.println("cityService init");
+    }
+
+    @PreDestroy
+    void destroy() {
+        System.out.println("cityService destroy");
     }
 
     public void hello() {

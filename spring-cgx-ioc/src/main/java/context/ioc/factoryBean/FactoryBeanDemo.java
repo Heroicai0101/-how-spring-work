@@ -9,7 +9,7 @@ import javax.annotation.Resource;
  * @author guoxiong
  * 2020/1/28 下午5:11
  */
-@Component
+//@Component
 public class FactoryBeanDemo {
 
     @Resource
