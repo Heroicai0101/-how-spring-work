@@ -5,6 +5,7 @@ import context.cloudstream.MessageChannel;
 import context.cloudstream.XInterface;
 import context.cloudstream.YInterface;
 import context.ioc.CityService;
+import context.ioc.autowireMode.MyService;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -29,6 +30,10 @@ public class MyIocClient {
 
         MessageChannel messageChannel = context.getBean("myOutputX", MessageChannel.class);
         messageChannel.send("World");
+
+        /* ---------- 测试注入模型 ---------- */
+        MyService myService = context.getBean("myService", MyService.class);
+        System.out.println(myService);
 
         // 测试 destroy
 //         context.close();
