@@ -1,8 +1,8 @@
 package context.annotation.atImport;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.stereotype.Component;
@@ -26,12 +26,15 @@ public class MyBeanDefinitionRegistryPostProcessor implements BeanDefinitionRegi
         System.out.println("beanNames =" + Arrays.toString(beanDefinitionNames));
 
         // 修改Bean定义
-        AbstractBeanDefinition beanDefinition = (AbstractBeanDefinition) registry.getBeanDefinition("person");
-        beanDefinition.getPropertyValues().addPropertyValue("name", "cgx");
+//        BeanDefinition beanDefinition = registry.getBeanDefinition("person");
+//        beanDefinition.getPropertyValues().addPropertyValue("name", "cgx");
     }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        // 修改bean定义
+        BeanDefinition beanDefinition = beanFactory.getBeanDefinition("person");
+        beanDefinition.getPropertyValues().addPropertyValue("name", "cgx");
 
     }
 

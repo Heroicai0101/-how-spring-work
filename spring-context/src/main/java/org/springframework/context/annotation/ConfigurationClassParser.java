@@ -229,6 +229,7 @@ class ConfigurationClassParser {
 		}
 		while (sourceClass != null);
 
+		// 重要: configClass 都要收集起来
 		this.configurationClasses.put(configClass, configClass);
 	}
 
@@ -276,7 +277,9 @@ class ConfigurationClassParser {
 					if (bdCand == null) {
 						bdCand = holder.getBeanDefinition();
 					}
+					// 特别强调: 最常见的 @Component 注解的类就是一个 ConfigurationClass
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
+						// 每一个 ConfigurationClass 在递归解析下, 比如看看类上有没有 @Import 注解, 方法上有没有 @Bean
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
 					}
 				}
@@ -317,6 +320,7 @@ class ConfigurationClassParser {
 
 		// Process superclass, if any
 		if (sourceClass.getMetadata().hasSuperClass()) {
+			// 如果当前类没有父类, 则 superClass= java.lang.Object
 			String superclass = sourceClass.getMetadata().getSuperClassName();
 			if (!superclass.startsWith("java") && !this.knownSuperclasses.containsKey(superclass)) {
 				this.knownSuperclasses.put(superclass, configClass);

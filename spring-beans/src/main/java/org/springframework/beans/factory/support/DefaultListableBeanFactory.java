@@ -932,6 +932,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 	@Override
 	public void registerSingleton(String beanName, Object singletonObject) throws IllegalStateException {
+		// 放入到单例池
 		super.registerSingleton(beanName, singletonObject);
 
 		if (hasBeanCreationStarted()) {
@@ -941,6 +942,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 					Set<String> updatedSingletons = new LinkedHashSet<String>(this.manualSingletonNames.size() + 1);
 					updatedSingletons.addAll(this.manualSingletonNames);
 					updatedSingletons.add(beanName);
+					// 这里面存放的都是主动放入的: 如 environment
 					this.manualSingletonNames = updatedSingletons;
 				}
 			}

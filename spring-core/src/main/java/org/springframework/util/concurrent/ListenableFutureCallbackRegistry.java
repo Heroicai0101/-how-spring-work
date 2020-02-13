@@ -40,6 +40,7 @@ public class ListenableFutureCallbackRegistry<T> {
 
 	private State state = State.NEW;
 
+	/** 这个 result 为 Object 类型, 既可用来接收执行成功的返回值, 也可以接收执行异常的 Throwable 对象 */
 	private Object result = null;
 
 	private final Object mutex = new Object();

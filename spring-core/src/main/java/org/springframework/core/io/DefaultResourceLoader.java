@@ -86,6 +86,7 @@ public class DefaultResourceLoader implements ResourceLoader {
 	 */
 	@Override
 	public ClassLoader getClassLoader() {
+        // 无参构造函数里面有默认设置
 		return (this.classLoader != null ? this.classLoader : ClassUtils.getDefaultClassLoader());
 	}
 

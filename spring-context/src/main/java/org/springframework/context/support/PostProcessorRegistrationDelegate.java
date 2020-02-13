@@ -48,6 +48,7 @@ class PostProcessorRegistrationDelegate {
 			List<BeanFactoryPostProcessor> regularPostProcessors = new LinkedList<BeanFactoryPostProcessor>();
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new LinkedList<BeanDefinitionRegistryPostProcessor>();
 
+			// beanFactoryPostProcessors 传入的为空列表
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =
@@ -75,9 +76,9 @@ class PostProcessorRegistrationDelegate {
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
-				// 只有一个 ConfigurationClassPostProcessor ？
+				// 只有一个 ConfigurationClassPostProcessor 对象 ？
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
-					// 这里触发了getBean
+					// 这里触发了getBean, 将 ConfigurationClassPostProcessor 这个bean放入currentRegistryProcessors
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
@@ -86,6 +87,7 @@ class PostProcessorRegistrationDelegate {
 			registryProcessors.addAll(currentRegistryProcessors);
 
 			/*
+			 * 这一步 currentRegistryProcessors 里面已经不是空列表了
 			 * 重要: bean定义扫描; 由 ConfigurationClassPostProcessor 这个 BeanDefinitionRegistryPostProcessor 来完成
  			 */
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
@@ -201,6 +203,7 @@ class PostProcessorRegistrationDelegate {
 		List<String> nonOrderedPostProcessorNames = new ArrayList<String>();
 		for (String ppName : postProcessorNames) {
 			if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+				// !!! 这里触发了getBean
 				BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
 				priorityOrderedPostProcessors.add(pp);
 				if (pp instanceof MergedBeanDefinitionPostProcessor) {

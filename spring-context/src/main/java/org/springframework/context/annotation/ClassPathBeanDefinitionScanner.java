@@ -161,6 +161,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		this.registry = registry;
 
 		if (useDefaultFilters) {
+			// 注册默认的过滤器: 只扫描有 @Component 注解的类
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
@@ -269,12 +270,13 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<BeanDefinitionHolder>();
 		for (String basePackage : basePackages) {
-			// 逐个包扫描，解析出beanDefinition
+			// 逐个包扫描，补充完善 beanDefinition 信息
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
+				// ScannedGenericBeanDefinition 是 AbstractBeanDefinition 子类, 也实现了 AnnotatedBeanDefinition 接口
 				if (candidate instanceof AbstractBeanDefinition) {
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
@@ -286,7 +288,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
-					// 放入beanDefinitionMap
+					// 重要: 放入beanDefinitionMap
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}
@@ -332,6 +334,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 */
 	protected boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
 		if (!this.registry.containsBeanDefinition(beanName)) {
+			// 刚扫描出来的bean定义, 还没来得及添加到 beanDefinitionMap 中
 			return true;
 		}
 		BeanDefinition existingDef = this.registry.getBeanDefinition(beanName);

@@ -45,7 +45,8 @@ import org.springframework.beans.BeansException;
 public interface BeanFactoryPostProcessor {
 
 	/**
-	 * 可以用来给 beanFactory 导入BPP组件：ConfigurableListableBeanFactory.addBeanPostProcessor();
+	 * 1、在bean对象实例化之前, 修改bean定义, 比如修改属性
+	 * 2、可以用来给 beanFactory 导入BPP组件：ConfigurableListableBeanFactory.addBeanPostProcessor();
 	 *
 	 * Modify the application context's internal bean factory after its standard
 	 * initialization. All bean definitions will have been loaded, but no beans
