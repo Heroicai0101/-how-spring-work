@@ -38,6 +38,7 @@ abstract class TransactionAttributeSourcePointcut extends StaticMethodMatcherPoi
 			return false;
 		}
 		TransactionAttributeSource tas = getTransactionAttributeSource();
+		// 在 AbstractAdvisorAutoProxyCreator.findEligibleAdvisors() 会触发切点匹配
 		return (tas == null || tas.getTransactionAttribute(method, targetClass) != null);
 	}
 

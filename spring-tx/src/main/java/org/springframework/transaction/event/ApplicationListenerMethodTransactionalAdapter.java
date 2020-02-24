@@ -61,6 +61,7 @@ class ApplicationListenerMethodTransactionalAdapter extends ApplicationListenerM
 	public void onApplicationEvent(ApplicationEvent event) {
 		if (TransactionSynchronizationManager.isSynchronizationActive()) {
 			TransactionSynchronization transactionSynchronization = createTransactionSynchronization(event);
+			// 注册一个事务同步器
 			TransactionSynchronizationManager.registerSynchronization(transactionSynchronization);
 		}
 		else if (this.annotation.fallbackExecution()) {

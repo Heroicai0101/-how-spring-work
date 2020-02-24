@@ -37,16 +37,26 @@ import org.springframework.transaction.interceptor.TransactionInterceptor;
 @Configuration
 public class ProxyTransactionManagementConfiguration extends AbstractTransactionManagementConfiguration {
 
+	/**
+	 * 配置 Advisor 完成事务注解的AOP, Advisor 由 Pointcut 和 Advice 两部分组成
+	 * beanName = org.springframework.transaction.config.internalTransactionAdvisor
+	 */
 	@Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor() {
 		BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
+		// @Transaction 注解的解析器, Pointcut 会用到
 		advisor.setTransactionAttributeSource(transactionAttributeSource());
+
+		// TransactionInterceptor 本身是 Advise 这个标记接口的实现类
 		advisor.setAdvice(transactionInterceptor());
 		advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
 		return advisor;
 	}
 
+	/**
+	 * 配置 @Transaction 注解的属性解析器
+	 */
 	@Bean
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionAttributeSource transactionAttributeSource() {
@@ -59,6 +69,7 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 		TransactionInterceptor interceptor = new TransactionInterceptor();
 		interceptor.setTransactionAttributeSource(transactionAttributeSource());
 		if (this.txManager != null) {
+			// 在父类中通过set方法注入了; 注解驱动开发时, 不是这里指定，而是直接在 @Transaction 注解上指定用哪个事务管理器
 			interceptor.setTransactionManager(this.txManager);
 		}
 		return interceptor;

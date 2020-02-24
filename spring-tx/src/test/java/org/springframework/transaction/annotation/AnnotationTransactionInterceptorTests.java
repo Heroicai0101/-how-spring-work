@@ -17,10 +17,10 @@
 package org.springframework.transaction.annotation;
 
 import org.junit.Test;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.tests.transaction.CallCountingTransactionManager;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import static org.junit.Assert.*;
@@ -31,10 +31,13 @@ import static org.junit.Assert.*;
  */
 public class AnnotationTransactionInterceptorTests {
 
+	/** mock一个事务管理器 */
 	private final CallCountingTransactionManager ptm = new CallCountingTransactionManager();
 
+	/** Transaction 注解解析 */
 	private final AnnotationTransactionAttributeSource source = new AnnotationTransactionAttributeSource();
 
+	/** Advice */
 	private final TransactionInterceptor ti = new TransactionInterceptor(this.ptm, this.source);
 
 
@@ -216,6 +219,15 @@ public class AnnotationTransactionInterceptorTests {
 	public static class TestClassLevelOnly {
 
 		public void doSomething() {
+			// 注册一个事务同步器
+			TransactionSynchronizationManager.registerSynchronization(
+					new TransactionSynchronizationAdapter() {
+						@Override
+						public void afterCommit() {
+							System.out.println("After commit");
+						}
+					});
+
 			assertTrue(TransactionSynchronizationManager.isActualTransactionActive());
 			assertFalse(TransactionSynchronizationManager.isCurrentTransactionReadOnly());
 		}

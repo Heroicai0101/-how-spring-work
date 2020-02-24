@@ -26,6 +26,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AliasFor;
 
 /**
+ * 注解之上还标记了 @EventListener 注解
  * An {@link EventListener} that is invoked according to a {@link TransactionPhase}.
  *
  * <p>If the event is not published within the boundaries of a managed transaction, the

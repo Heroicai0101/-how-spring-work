@@ -20,6 +20,9 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 /**
+ * 在不启用Aop环境下(即无 @EnableAspectJAutoProxy ), InfrastructureAdvisorAutoProxyCreator 可独立承担完成事务的Aop代理;
+ * 若启用Aop环境, 则 InfrastructureAdvisorAutoProxyCreator 不起作用; 事务Aop交由 AnnotationAwareAspectJAutoProxyCreator 完成
+ *
  * Auto-proxy creator that considers infrastructure Advisor beans only,
  * ignoring any application-defined Advisors.
  *
@@ -40,6 +43,7 @@ public class InfrastructureAdvisorAutoProxyCreator extends AbstractAdvisorAutoPr
 
 	@Override
 	protected boolean isEligibleAdvisorBean(String beanName) {
+		// InfrastructureAdvisorAutoProxyCreator 是通过 AutoProxyRegistrar 导入bean定义的, 在导入的时候就设置了role
 		return (this.beanFactory.containsBeanDefinition(beanName) &&
 				this.beanFactory.getBeanDefinition(beanName).getRole() == BeanDefinition.ROLE_INFRASTRUCTURE);
 	}

@@ -61,6 +61,9 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 		}
 	}
 
+	/**
+	 * 注入了 PlatformTransactionManager
+	 */
 	@Autowired(required = false)
 	void setConfigurers(Collection<TransactionManagementConfigurer> configurers) {
 		if (CollectionUtils.isEmpty(configurers)) {
@@ -74,6 +77,9 @@ public abstract class AbstractTransactionManagementConfiguration implements Impo
 	}
 
 
+	/**
+	 * 注册一个 EventListenerFactory 组件, 用来生成事务监听器 处理 @TransactionalEventListener 注解的方法
+	 */
 	@Bean(name = TransactionManagementConfigUtils.TRANSACTIONAL_EVENT_LISTENER_FACTORY_BEAN_NAME)
 	@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 	public TransactionalEventListenerFactory transactionalEventListenerFactory() {

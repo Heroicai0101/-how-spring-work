@@ -56,6 +56,7 @@ public abstract class AopConfigUtils {
 	private static final List<Class<?>> APC_PRIORITY_LIST = new ArrayList<Class<?>>(3);
 
 	static {
+		// 优先级从低到高
 		// Set up the escalation list...
 		APC_PRIORITY_LIST.add(InfrastructureAdvisorAutoProxyCreator.class);
 		APC_PRIORITY_LIST.add(AspectJAwareAdvisorAutoProxyCreator.class);
@@ -103,6 +104,10 @@ public abstract class AopConfigUtils {
 	}
 
 
+	/**
+	 * 当 InfrastructureAdvisorAutoProxyCreator 和 AnnotationAwareAspectJAutoProxyCreator 都需要导入bean定义时,
+	 * 仅导入优先级更高的 AnnotationAwareAspectJAutoProxyCreator
+ 	 */
 	private static BeanDefinition registerOrEscalateApcAsRequired(Class<?> cls, BeanDefinitionRegistry registry, Object source) {
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
 
@@ -112,6 +117,7 @@ public abstract class AopConfigUtils {
 				int currentPriority = findPriorityForClass(apcDefinition.getBeanClassName());
 				int requiredPriority = findPriorityForClass(cls);
 				if (currentPriority < requiredPriority) {
+					// 这里改写了 beanClass
 					apcDefinition.setBeanClassName(cls.getName());
 				}
 			}
@@ -122,6 +128,7 @@ public abstract class AopConfigUtils {
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
 		beanDefinition.setSource(source);
 		beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);
+		// role设置为 ROLE_INFRASTRUCTURE; why? InfrastructureAdvisorAutoProxyCreator.isEligibleAdvisorBean() 方法
 		beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 		// 注册bean定义： scope 为 SCOPE_DEFAULT，会被判定为单例；而非懒加载的单例bean容器会负责帮我们实例化、初始化
 		registry.registerBeanDefinition(AUTO_PROXY_CREATOR_BEAN_NAME, beanDefinition);

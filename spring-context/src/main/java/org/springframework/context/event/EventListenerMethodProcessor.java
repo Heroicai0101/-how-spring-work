@@ -131,7 +131,7 @@ public class EventListenerMethodProcessor implements SmartInitializingSingleton,
 		if (!this.nonAnnotatedClasses.contains(targetType)) {
 			Map<Method, EventListener> annotatedMethods = null;
 			try {
-				// 查找当前类全部带 @EventListener 注解的方法
+				// 查找当前类全部带 @EventListener 注解的方法 (注 @TransactionalEventListener 上面叠加有 @EventListener 注解)
 				annotatedMethods = MethodIntrospector.selectMethods(targetType,
 						new MethodIntrospector.MetadataLookup<EventListener>() {
 							@Override

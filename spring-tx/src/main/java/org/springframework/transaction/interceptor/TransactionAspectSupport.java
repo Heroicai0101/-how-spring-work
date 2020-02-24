@@ -267,29 +267,37 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 	protected Object invokeWithinTransaction(Method method, Class<?> targetClass, final InvocationCallback invocation)
 			throws Throwable {
 
+		// 解析 @Transaction 注解各属性, 封装为事务属性 TransactionAttribute
 		// If the transaction attribute is null, the method is non-transactional.
 		final TransactionAttribute txAttr = getTransactionAttributeSource().getTransactionAttribute(method, targetClass);
+
+		// 事务管理器
 		final PlatformTransactionManager tm = determineTransactionManager(txAttr);
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
 		if (txAttr == null || !(tm instanceof CallbackPreferringPlatformTransactionManager)) {
+			// 判断下当前是否需要新开事务, 为什么要这么判断? 了解下spring的事务传播机制
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
 			TransactionInfo txInfo = createTransactionIfNecessary(tm, txAttr, joinpointIdentification);
 
 			Object retVal;
 			try {
+				// 可视为真正调用业务方法的地方
 				// This is an around advice: Invoke the next interceptor in the chain.
 				// This will normally result in a target object being invoked.
 				retVal = invocation.proceedWithInvocation();
 			}
 			catch (Throwable ex) {
+				// 回滚事务
 				// target invocation exception
 				completeTransactionAfterThrowing(txInfo, ex);
 				throw ex;
 			}
 			finally {
+				// 将事务的上下文信息改回本事务开始之前的上下文。由于spring的事务传播机制, 有可能本事务嵌套在其他事务中
 				cleanupTransactionInfo(txInfo);
 			}
+			// 提交事务; 会附带处理事务回调
 			commitTransactionAfterReturning(txInfo);
 			return retVal;
 		}
@@ -373,6 +381,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		String qualifier = txAttr.getQualifier();
 		if (StringUtils.hasText(qualifier)) {
+			// 如果 @Transaction 注解指定了 TransactionManager, 则从BeanFactory按名字取
 			return determineQualifiedTransactionManager(qualifier);
 		}
 		else if (StringUtils.hasText(this.transactionManagerBeanName)) {
@@ -383,6 +392,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			if (defaultTransactionManager == null) {
 				defaultTransactionManager = this.transactionManagerCache.get(DEFAULT_TRANSACTION_MANAGER_KEY);
 				if (defaultTransactionManager == null) {
+					// 如果 @Transaction 注解未指定 TransactionManager, 则从 BeanFactory按类型取
 					defaultTransactionManager = this.beanFactory.getBean(PlatformTransactionManager.class);
 					this.transactionManagerCache.putIfAbsent(
 							DEFAULT_TRANSACTION_MANAGER_KEY, defaultTransactionManager);
@@ -460,6 +470,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		TransactionStatus status = null;
 		if (txAttr != null) {
 			if (tm != null) {
+				// 从事务管理器获取事务对象
 				status = tm.getTransaction(txAttr);
 			}
 			else {
@@ -501,6 +512,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 		}
 
+		// 将事务信息绑定到当前线程, 同时外层事务信息也会暂存下来
 		// We always bind the TransactionInfo to the thread, even if we didn't create
 		// a new transaction here. This guarantees that the TransactionInfo stack
 		// will be managed correctly even if no transaction was created by this aspect.
@@ -536,6 +548,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			}
 			if (txInfo.transactionAttribute.rollbackOn(ex)) {
 				try {
+					// 回滚
 					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
 				}
 				catch (TransactionSystemException ex2) {
@@ -556,6 +569,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				// We don't roll back on this exception.
 				// Will still roll back if TransactionStatus.isRollbackOnly() is true.
 				try {
+					// 如果异常不是指定的需要回滚的异常, 则仍然执行提交
 					txInfo.getTransactionManager().commit(txInfo.getTransactionStatus());
 				}
 				catch (TransactionSystemException ex2) {
@@ -588,6 +602,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 
 	/**
+	 * 事务信息的聚合: 包含事务管理器、事务属性、事务运行状态、被事务包裹的方法定义信息等
 	 * Opaque object used to hold transaction information. Subclasses
 	 * must pass it back to methods on this class, but not see its internals.
 	 */
@@ -599,6 +614,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 		private final String joinpointIdentification;
 
+		/** 事务运行状态 */
 		private TransactionStatus transactionStatus;
 
 		private TransactionInfo oldTransactionInfo;

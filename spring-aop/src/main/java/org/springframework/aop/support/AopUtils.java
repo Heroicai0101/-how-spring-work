@@ -239,6 +239,7 @@ public abstract class AopUtils {
 			for (Method method : methods) {
 				if ((introductionAwareMethodMatcher != null &&
 						introductionAwareMethodMatcher.matches(method, targetClass, hasIntroductions)) ||
+						// 切点匹配
 						methodMatcher.matches(method, targetClass)) {
 					return true;
 				}

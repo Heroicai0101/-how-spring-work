@@ -338,6 +338,8 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 */
 	@Override
 	public final TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+		// 获取数据库Connection; 重点关注常用的 DataSourceTransactionManager;
+		// 如果是新开的事务，会为null; 如果嵌套的事务，则会复用连接
 		Object transaction = doGetTransaction();
 
 		// Cache debug flag to avoid repeated checks.
@@ -374,7 +376,9 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 				boolean newSynchronization = (getTransactionSynchronization() != SYNCHRONIZATION_NEVER);
 				DefaultTransactionStatus status = newTransactionStatus(
 						definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
+				// 开启事务
 				doBegin(transaction, definition);
+				// 将事务信息绑定到当前线程, 通过 TransactionSynchronizationManager 的ThreadLocal 来实现
 				prepareSynchronization(status, definition);
 				return status;
 			}
@@ -388,6 +392,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			}
 		}
 		else {
+			// 当前隔离级别下, 不需要新开事务
 			// Create "empty" transaction: no actual transaction, but potentially synchronization.
 			if (definition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT && logger.isWarnEnabled()) {
 				logger.warn("Custom isolation level specified but no actual transaction initiated; " +
@@ -762,6 +767,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction commit");
 					}
+					// 真正调用数据库连接来提交事务
 					doCommit(status);
 				}
 				// Throw UnexpectedRollbackException if we have a global rollback-only
@@ -779,6 +785,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			catch (TransactionException ex) {
 				// can only be caused by doCommit
 				if (isRollbackOnCommitFailure()) {
+					// 提交异常时, 则回滚事务; 如果回滚也异常了, 事务执行状态就是未知 ???
 					doRollbackOnCommitException(status, ex);
 				}
 				else {
@@ -804,6 +811,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 			// Trigger afterCommit callbacks, with an exception thrown there
 			// propagated to callers but the transaction still considered as committed.
 			try {
+				// 事务提交成功, 触发事务回调
 				triggerAfterCommit(status);
 			}
 			finally {
@@ -812,6 +820,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 
 		}
 		finally {
+			// 注意: 直到这里才归还数据库连接, 因此事务回调里面如果有数据库操作, 那么用的还是原来的连接, 可能会出问题
 			cleanupAfterCompletion(status);
 		}
 	}
@@ -854,6 +863,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 					if (status.isDebug()) {
 						logger.debug("Initiating transaction rollback");
 					}
+					// 真正做数据库事务回滚
 					doRollback(status);
 				}
 				else if (status.hasTransaction()) {
@@ -1013,11 +1023,13 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 	 * @see #doCleanupAfterCompletion
 	 */
 	private void cleanupAfterCompletion(DefaultTransactionStatus status) {
+		// 事务运行状态标记为已完成
 		status.setCompleted();
 		if (status.isNewSynchronization()) {
 			TransactionSynchronizationManager.clear();
 		}
 		if (status.isNewTransaction()) {
+			// 归还数据库连接
 			doCleanupAfterCompletion(status.getTransaction());
 		}
 		if (status.getSuspendedResources() != null) {
