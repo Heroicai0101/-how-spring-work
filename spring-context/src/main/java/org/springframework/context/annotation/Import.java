@@ -23,6 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 用来导入 @Configuration classes、ImportSelector、ImportBeanDefinitionRegistrar 以及java对象
  * Indicates one or more {@link Configuration @Configuration} classes to import.
  *
  * <p>Provides functionality equivalent to the {@code <import/>} element in Spring XML.

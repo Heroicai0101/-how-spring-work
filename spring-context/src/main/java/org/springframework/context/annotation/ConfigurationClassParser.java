@@ -247,6 +247,7 @@ class ConfigurationClassParser {
 		// Recursively process any member (nested) classes first
 		processMemberClasses(configClass, sourceClass);
 
+        // 处理 @PropertySource 注解, 用来导入配置文件
 		// Process any @PropertySource annotations
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
@@ -488,6 +489,7 @@ class ConfigurationClassParser {
 		}
 		else {
 			if (this.propertySourceNames.isEmpty()) {
+				// 添加到 propertySourceList 中
 				propertySources.addLast(propertySource);
 			}
 			else {
